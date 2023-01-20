@@ -1958,7 +1958,7 @@ load_ppd(const char  *filename,		/* I - Real filename */
          cups_file_t *fp,		/* I - File to read from */
          off_t       end)		/* I - End of file position or 0 */
 {
-  int		i;			/* Looping var */
+  size_t		i;			/* Looping var */
   char		line[256],		/* Line from file */
 		*ptr,			/* Pointer into line */
 		lang_version[64],	/* PPD LanguageVersion */
@@ -1978,7 +1978,6 @@ load_ppd(const char  *filename,		/* I - Real filename */
   cups_array_t	*products,		/* Product array */
 		*psversions,		/* PSVersion array */
 		*cups_languages;	/* cupsLanguages array */
-  int		new_ppd;		/* Is this a new PPD? */
   struct				/* LanguageVersion translation table */
   {
     const char	*version,		/* LanguageVersion string */
@@ -2252,11 +2251,11 @@ load_ppd(const char  *filename,		/* I - Real filename */
     country[0] = '\0';
   }
 
-  for (i = 0; i < (int)(sizeof(languages) / sizeof(languages[0])); i ++)
+  for (i = 0; i < (sizeof(languages) / sizeof(languages[0])); i ++)
     if (!_cups_strcasecmp(languages[i].version, lang_version))
       break;
 
-  if (i < (int)(sizeof(languages) / sizeof(languages[0])))
+  if (i < sizeof(languages) / sizeof(languages[0]))
   {
    /*
     * Found a known language...
@@ -2278,9 +2277,7 @@ load_ppd(const char  *filename,		/* I - Real filename */
   * Record the PPD file...
   */
 
-  new_ppd = !ppd;
-
-  if (new_ppd)
+  if (!ppd)
   {
    /*
     * Add new PPD file...
@@ -2403,7 +2400,12 @@ load_ppds(const char *d,		/* I - Actual directory */
   * Nope, add it to the Inodes array and continue...
   */
 
-  dinfoptr = (struct stat *)malloc(sizeof(struct stat));
+  if ((dinfoptr = (struct stat *)malloc(sizeof(struct stat))) == NULL)
+  {
+    fputs("ERROR: [cups-driverd] Unable to allocate memory for directory info.\n",
+          stderr);
+    exit(1);
+  }
   memcpy(dinfoptr, &dinfo, sizeof(struct stat));
   cupsArrayAdd(Inodes, dinfoptr);
 
@@ -2609,7 +2611,7 @@ load_ppds_dat(char   *filename,		/* I - Filename buffer */
     */
 
     unsigned ppdsync;			/* Sync word */
-    int      num_ppds;			/* Number of PPDs */
+    off_t      num_ppds;			/* Number of PPDs */
 
     if ((size_t)cupsFileRead(fp, (char *)&ppdsync, sizeof(ppdsync)) == sizeof(ppdsync) &&
         ppdsync == PPD_SYNC &&
@@ -2625,8 +2627,7 @@ load_ppds_dat(char   *filename,		/* I - Filename buffer */
       {
 	if ((ppd = (ppd_info_t *)calloc(1, sizeof(ppd_info_t))) == NULL)
 	{
-	  if (verbose)
-	    fputs("ERROR: [cups-driverd] Unable to allocate memory for PPD!\n",
+	  fputs("ERROR: [cups-driverd] Unable to allocate memory for PPD!\n",
 		  stderr);
 	  exit(1);
 	}

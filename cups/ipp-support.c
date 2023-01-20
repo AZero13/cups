@@ -688,9 +688,8 @@ ippAttributeString(
     if (val > attr->values)
     {
       if (buffer && bufptr < bufend)
-        *bufptr++ = ',';
-      else
-        bufptr ++;
+        *bufptr = ',';
+      bufptr ++;
     }
 
     switch (attr->value_tag & ~IPP_TAG_CUPS_CONST)
@@ -888,8 +887,8 @@ ippAttributeString(
 cups_array_t *				/* O - CUPS array or @code NULL@ if all */
 ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 {
-  int			i, j,		/* Looping vars */
-			count,		/* Number of values */
+  int			i; size_t j;		/* Looping vars */
+  int			count,		/* Number of values */
 			added;		/* Was name added? */
   ipp_op_t		op;		/* IPP operation code */
   ipp_attribute_t	*requested;	/* requested-attributes attribute */
@@ -1978,7 +1977,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "document-description") || (!strcmp(value, "all") && (op == IPP_OP_GET_JOB_ATTRIBUTES || op == IPP_OP_GET_JOBS || op == IPP_OP_GET_DOCUMENT_ATTRIBUTES || op == IPP_OP_GET_DOCUMENTS)))
     {
-      for (j = 0; j < (int)(sizeof(document_description) / sizeof(document_description[0])); j ++)
+      for (j = 0; j < (sizeof(document_description) / sizeof(document_description[0])); j ++)
         cupsArrayAdd(ra, (void *)document_description[j]);
 
       added = 1;
@@ -1986,7 +1985,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "document-template") || !strcmp(value, "all"))
     {
-      for (j = 0; j < (int)(sizeof(document_template) / sizeof(document_template[0])); j ++)
+      for (j = 0; j < (sizeof(document_template) / sizeof(document_template[0])); j ++)
         cupsArrayAdd(ra, (void *)document_template[j]);
 
       added = 1;
@@ -1994,7 +1993,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "job-description") || (!strcmp(value, "all") && (op == IPP_OP_GET_JOB_ATTRIBUTES || op == IPP_OP_GET_JOBS)))
     {
-      for (j = 0; j < (int)(sizeof(job_description) / sizeof(job_description[0])); j ++)
+      for (j = 0; j < (sizeof(job_description) / sizeof(job_description[0])); j ++)
         cupsArrayAdd(ra, (void *)job_description[j]);
 
       added = 1;
@@ -2002,7 +2001,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "job-template") || (!strcmp(value, "all") && (op == IPP_OP_GET_JOB_ATTRIBUTES || op == IPP_OP_GET_JOBS || op == IPP_OP_GET_PRINTER_ATTRIBUTES)))
     {
-      for (j = 0; j < (int)(sizeof(job_template) / sizeof(job_template[0])); j ++)
+      for (j = 0; j < (sizeof(job_template) / sizeof(job_template[0])); j ++)
         cupsArrayAdd(ra, (void *)job_template[j]);
 
       added = 1;
@@ -2010,7 +2009,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "printer-description") || (!strcmp(value, "all") && (op == IPP_OP_GET_PRINTER_ATTRIBUTES || op == IPP_OP_GET_PRINTERS || op == IPP_OP_CUPS_GET_DEFAULT || op == IPP_OP_CUPS_GET_PRINTERS || op == IPP_OP_CUPS_GET_CLASSES)))
     {
-      for (j = 0; j < (int)(sizeof(printer_description) / sizeof(printer_description[0])); j ++)
+      for (j = 0; j < (sizeof(printer_description) / sizeof(printer_description[0])); j ++)
         cupsArrayAdd(ra, (void *)printer_description[j]);
 
       added = 1;
@@ -2018,7 +2017,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "resource-description") || (!strcmp(value, "all") && (op == IPP_OP_GET_RESOURCE_ATTRIBUTES || op == IPP_OP_GET_RESOURCES)))
     {
-      for (j = 0; j < (int)(sizeof(resource_description) / sizeof(resource_description[0])); j ++)
+      for (j = 0; j < (sizeof(resource_description) / sizeof(resource_description[0])); j ++)
         cupsArrayAdd(ra, (void *)resource_description[j]);
 
       added = 1;
@@ -2026,7 +2025,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "resource-status") || (!strcmp(value, "all") && (op == IPP_OP_GET_RESOURCE_ATTRIBUTES || op == IPP_OP_GET_RESOURCES)))
     {
-      for (j = 0; j < (int)(sizeof(resource_status) / sizeof(resource_status[0])); j ++)
+      for (j = 0; j < (sizeof(resource_status) / sizeof(resource_status[0])); j ++)
         cupsArrayAdd(ra, (void *)resource_status[j]);
 
       added = 1;
@@ -2034,7 +2033,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "resource-template") || (!strcmp(value, "all") && (op == IPP_OP_GET_RESOURCE_ATTRIBUTES || op == IPP_OP_GET_RESOURCES || op == IPP_OP_GET_SYSTEM_ATTRIBUTES)))
     {
-      for (j = 0; j < (int)(sizeof(resource_template) / sizeof(resource_template[0])); j ++)
+      for (j = 0; j < (sizeof(resource_template) / sizeof(resource_template[0])); j ++)
         cupsArrayAdd(ra, (void *)resource_template[j]);
 
       added = 1;
@@ -2042,7 +2041,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "subscription-description") || (!strcmp(value, "all") && (op == IPP_OP_GET_SUBSCRIPTION_ATTRIBUTES || op == IPP_OP_GET_SUBSCRIPTIONS)))
     {
-      for (j = 0; j < (int)(sizeof(subscription_description) / sizeof(subscription_description[0])); j ++)
+      for (j = 0; j < (sizeof(subscription_description) / sizeof(subscription_description[0])); j ++)
         cupsArrayAdd(ra, (void *)subscription_description[j]);
 
       added = 1;
@@ -2050,7 +2049,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "subscription-template") || (!strcmp(value, "all") && (op == IPP_OP_GET_SUBSCRIPTION_ATTRIBUTES || op == IPP_OP_GET_SUBSCRIPTIONS)))
     {
-      for (j = 0; j < (int)(sizeof(subscription_template) / sizeof(subscription_template[0])); j ++)
+      for (j = 0; j < (sizeof(subscription_template) / sizeof(subscription_template[0])); j ++)
         cupsArrayAdd(ra, (void *)subscription_template[j]);
 
       added = 1;
@@ -2058,7 +2057,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "system-description") || (!strcmp(value, "all") && op == IPP_OP_GET_SYSTEM_ATTRIBUTES))
     {
-      for (j = 0; j < (int)(sizeof(system_description) / sizeof(system_description[0])); j ++)
+      for (j = 0; j < (sizeof(system_description) / sizeof(system_description[0])); j ++)
         cupsArrayAdd(ra, (void *)system_description[j]);
 
       added = 1;
@@ -2066,7 +2065,7 @@ ippCreateRequestedArray(ipp_t *request)	/* I - IPP request */
 
     if (!strcmp(value, "system-status") || (!strcmp(value, "all") && op == IPP_OP_GET_SYSTEM_ATTRIBUTES))
     {
-      for (j = 0; j < (int)(sizeof(system_status) / sizeof(system_status[0])); j ++)
+      for (j = 0; j < (sizeof(system_status) / sizeof(system_status[0])); j ++)
         cupsArrayAdd(ra, (void *)system_status[j]);
 
       added = 1;
@@ -2285,12 +2284,12 @@ ippErrorString(ipp_status_t error)	/* I - Error status */
 ipp_status_t				/* O - IPP status code */
 ippErrorValue(const char *name)		/* I - Name */
 {
-  size_t	i;			/* Looping var */
+  ipp_status_t	i;			/* Looping var */
 
 
-  for (i = 0; i < (sizeof(ipp_status_oks) / sizeof(ipp_status_oks[0])); i ++)
+  for (i = 0; i < (ipp_status_t)(sizeof(ipp_status_oks) / sizeof(ipp_status_oks[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_status_oks[i]))
-      return ((ipp_status_t)i);
+      return (i);
 
   if (!_cups_strcasecmp(name, "redirection-other-site"))
     return (IPP_STATUS_REDIRECTION_OTHER_SITE);
@@ -2298,21 +2297,21 @@ ippErrorValue(const char *name)		/* I - Name */
   if (!_cups_strcasecmp(name, "cups-see-other"))
     return (IPP_STATUS_CUPS_SEE_OTHER);
 
-  for (i = 0; i < (sizeof(ipp_status_400s) / sizeof(ipp_status_400s[0])); i ++)
+  for (i = 0; i < (ipp_status_t)(sizeof(ipp_status_400s) / sizeof(ipp_status_400s[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_status_400s[i]))
-      return ((ipp_status_t)(i + 0x400));
+      return (i + 0x400);
 
-  for (i = 0; i < (sizeof(ipp_status_480s) / sizeof(ipp_status_480s[0])); i ++)
+  for (i = 0; i < (ipp_status_t)(sizeof(ipp_status_480s) / sizeof(ipp_status_480s[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_status_480s[i]))
-      return ((ipp_status_t)(i + 0x480));
+      return (i + 0x480);
 
-  for (i = 0; i < (sizeof(ipp_status_500s) / sizeof(ipp_status_500s[0])); i ++)
+  for (i = 0; i < (ipp_status_t)(sizeof(ipp_status_500s) / sizeof(ipp_status_500s[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_status_500s[i]))
-      return ((ipp_status_t)(i + 0x500));
+      return (i + 0x500);
 
-  for (i = 0; i < (sizeof(ipp_status_1000s) / sizeof(ipp_status_1000s[0])); i ++)
+  for (i = 0; i < (ipp_status_t)(sizeof(ipp_status_1000s) / sizeof(ipp_status_1000s[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_status_1000s[i]))
-      return ((ipp_status_t)(i + 0x1000));
+      return (i + 0x1000);
 
   return ((ipp_status_t)-1);
 }
@@ -2362,26 +2361,26 @@ ippOpString(ipp_op_t op)		/* I - Operation ID */
 ipp_op_t				/* O - Operation ID */
 ippOpValue(const char *name)		/* I - Textual name */
 {
-  size_t	i;			/* Looping var */
+  ipp_op_t	i;			/* Looping var */
 
 
   if (!strncmp(name, "0x", 2))
     return ((ipp_op_t)strtol(name + 2, NULL, 16));
 
-  for (i = 0; i < (sizeof(ipp_std_ops) / sizeof(ipp_std_ops[0])); i ++)
+  for (i = 0; i < (ipp_op_t)(sizeof(ipp_std_ops) / sizeof(ipp_std_ops[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_std_ops[i]))
-      return ((ipp_op_t)i);
+      return (i);
 
   if (!_cups_strcasecmp(name, "windows-ext"))
     return (IPP_OP_PRIVATE);
 
-  for (i = 0; i < (sizeof(ipp_cups_ops) / sizeof(ipp_cups_ops[0])); i ++)
+  for (i = 0; i < (ipp_op_t)(sizeof(ipp_cups_ops) / sizeof(ipp_cups_ops[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_cups_ops[i]))
-      return ((ipp_op_t)(i + 0x4001));
+      return (i + 0x4001);
 
-  for (i = 0; i < (sizeof(ipp_cups_ops2) / sizeof(ipp_cups_ops2[0])); i ++)
+  for (i = 0; i < (ipp_op_t)(sizeof(ipp_cups_ops2) / sizeof(ipp_cups_ops2[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_cups_ops2[i]))
-      return ((ipp_op_t)(i + 0x4027));
+      return (i + 0x4027);
 
   if (!_cups_strcasecmp(name, "Create-Job-Subscription"))
     return (IPP_OP_CREATE_JOB_SUBSCRIPTIONS);
@@ -2480,12 +2479,12 @@ ippTagString(ipp_tag_t tag)		/* I - Tag value */
 ipp_tag_t				/* O - Tag value */
 ippTagValue(const char *name)		/* I - Tag name */
 {
-  size_t	i;			/* Looping var */
+  ipp_tag_t	i;			/* Looping var */
 
 
-  for (i = 0; i < (sizeof(ipp_tag_names) / sizeof(ipp_tag_names[0])); i ++)
+  for (i = 0; i < (ipp_tag_t)(sizeof(ipp_tag_names) / sizeof(ipp_tag_names[0])); i ++)
     if (!_cups_strcasecmp(name, ipp_tag_names[i]))
-      return ((ipp_tag_t)i);
+      return (i);
 
   if (!_cups_strcasecmp(name, "operation"))
     return (IPP_TAG_OPERATION);

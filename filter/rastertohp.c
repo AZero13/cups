@@ -568,7 +568,7 @@ OutputLine(cups_page_header2_t *header)	/* I - Page header */
 
   if (Feed > 0)
   {
-    printf("\033*b%dY", Feed);
+    printf("\033*b%uY", Feed);
     Feed = 0;
   }
 

@@ -119,16 +119,16 @@ main(int  argc,				/* I - Number of command-line args */
 
     page ++;
 
-    fprintf(stderr, "PAGE: %d %d\n", page, inheader.NumCopies);
+    fprintf(stderr, "PAGE: %u %u\n", page, inheader.NumCopies);
 
     page_width  = (unsigned)(inheader.cupsPageSize[0] * inheader.HWResolution[0] / 72.0);
     if (page_width < inheader.cupsWidth &&
 	page_width >= inheader.cupsWidth - 1)
-      page_width = (unsigned)inheader.cupsWidth;
+      page_width = inheader.cupsWidth;
     page_height = (unsigned)(inheader.cupsPageSize[1] * inheader.HWResolution[1] / 72.0);
     if (page_height < inheader.cupsHeight &&
 	page_height >= inheader.cupsHeight - 1)
-      page_height = (unsigned)inheader.cupsHeight;
+      page_height = inheader.cupsHeight;
     page_left   = (unsigned)(inheader.cupsImagingBBox[0] * inheader.HWResolution[0] / 72.0);
     page_bottom = (unsigned)(inheader.cupsImagingBBox[1] * inheader.HWResolution[1] / 72.0);
     tmp        = (int)(page_height - page_bottom - inheader.cupsHeight);
@@ -434,7 +434,7 @@ main(int  argc,				/* I - Number of command-line args */
     if (!cupsRasterWriteHeader2(outras, &outheader))
     {
       _cupsLangPrintFilter(stderr, "ERROR", _("Error sending raster data."));
-      fprintf(stderr, "DEBUG: Unable to write header for page %d.\n", page);
+      fprintf(stderr, "DEBUG: Unable to write header for page %u.\n", page);
       return (1);
     }
 
@@ -455,7 +455,7 @@ main(int  argc,				/* I - Number of command-line args */
       if (!cupsRasterWritePixels(outras, line, outheader.cupsBytesPerLine))
       {
 	_cupsLangPrintFilter(stderr, "ERROR", _("Error sending raster data."));
-	fprintf(stderr, "DEBUG: Unable to write line %d for page %d.\n",
+	fprintf(stderr, "DEBUG: Unable to write line %u for page %u.\n",
 	        page_top - y + 1, page);
 	return (1);
       }

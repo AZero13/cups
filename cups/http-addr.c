@@ -179,7 +179,7 @@ httpAddrListen(http_addr_t *addr,	/* I - Address to bind to */
   * Create the socket and set options...
   */
 
-  if ((fd = socket(addr->addr.sa_family, SOCK_STREAM, 0)) < 0)
+  if ((fd = (int)socket(addr->addr.sa_family, SOCK_STREAM, 0)) < 0)
   {
     _cupsSetHTTPError(HTTP_STATUS_ERROR);
     return (-1);

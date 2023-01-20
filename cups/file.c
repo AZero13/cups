@@ -1268,7 +1268,7 @@ cupsFileOpenFd(int        fd,		/* I - File descriptor */
 	  fp->stream.next_out  = fp->cbuf;
 	  fp->stream.avail_out = sizeof(fp->cbuf);
 	  fp->compressed       = 1;
-	  fp->crc              = crc32(0L, Z_NULL, 0);
+	  fp->crc              = crc32(0UL, Z_NULL, 0U);
 	}
 #endif /* HAVE_LIBZ */
         break;
@@ -2414,7 +2414,7 @@ cups_fill(cups_file_t *fp)		/* I - CUPS file */
       fp->stream.next_out  = NULL;
       fp->stream.avail_in  = (uInt)bytes;
       fp->stream.avail_out = 0;
-      fp->crc              = crc32(0L, Z_NULL, 0);
+      fp->crc              = crc32(0UL, Z_NULL, 0U);
 
       if ((status = inflateInit2(&(fp->stream), -15)) != Z_OK)
       {
@@ -2450,7 +2450,7 @@ cups_fill(cups_file_t *fp)		/* I - CUPS file */
       {
 	if ((bytes = cups_read(fp, (char *)fp->cbuf, sizeof(fp->cbuf))) <= 0)
 	{
-	  DEBUG_printf(("9cups_fill: cups_read error, returning %d.", (int)bytes));
+	  DEBUG_printf(("9cups_fill: cups_read error, returning %ld.", (long)bytes));
 
 	  fp->eof = 1;
 
@@ -2521,7 +2521,7 @@ cups_fill(cups_file_t *fp)		/* I - CUPS file */
 	  * Bad CRC, mark end-of-file...
 	  */
 
-	  DEBUG_printf(("9cups_fill: tcrc=%08x != fp->crc=%08x, returning -1.", (unsigned int)tcrc, (unsigned int)fp->crc));
+	  DEBUG_printf(("9cups_fill: tcrc=%08lx != fp->crc=%08lx, returning -1.", tcrc, fp->crc));
 
 	  fp->eof = 1;
 	  errno   = EIO;
@@ -2559,7 +2559,7 @@ cups_fill(cups_file_t *fp)		/* I - CUPS file */
 
       if (bytes)
       {
-        DEBUG_printf(("9cups_fill: Returning %d.", (int)bytes));
+        DEBUG_printf(("9cups_fill: Returning %ld.", (long)bytes));
 	return (bytes);
       }
     }
@@ -2591,7 +2591,7 @@ cups_fill(cups_file_t *fp)		/* I - CUPS file */
     fp->end = fp->buf + bytes;
   }
 
-  DEBUG_printf(("9cups_fill: Not gzip, returning %d.", (int)bytes));
+  DEBUG_printf(("9cups_fill: Not gzip, returning %ld.", (long)bytes));
 
   return (bytes);
 }

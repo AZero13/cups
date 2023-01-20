@@ -1858,7 +1858,7 @@ ippDeleteValues(
   */
 
   if (!ipp || !attr || !*attr ||
-      element < 0 || element >= (*attr)->num_values || count <= 0 ||
+      element < 0 || count <= 0 ||
       (element + count) > (*attr)->num_values)
     return (0);
 
@@ -4689,8 +4689,8 @@ ippValidateAttribute(
 		userpass[256],		/* Username/password from URI */
 		hostname[256],		/* Hostname from URI */
 		resource[1024];		/* Resource from URI */
-  int		port,			/* Port number from URI */
-		uri_status;		/* URI separation status */
+  int		port;			/* Port number from URI */
+  http_uri_status_t		uri_status;		/* URI separation status */
   const char	*ptr;			/* Pointer into string */
   ipp_attribute_t *colattr;		/* Collection attribute */
   regex_t	re;			/* Regular expression */

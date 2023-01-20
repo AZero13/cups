@@ -873,7 +873,7 @@ OutputLine(ppd_file_t         *ppd,	/* I - PPD file */
     case ZEBRA_CPCL :
         if (Buffer[0] || memcmp(Buffer, Buffer + 1, header->cupsBytesPerLine))
 	{
-	  printf("CG %u 1 0 %d ", header->cupsBytesPerLine, y);
+	  printf("CG %u 1 0 %u ", header->cupsBytesPerLine, y);
           fwrite(Buffer, 1, header->cupsBytesPerLine, stdout);
 	  puts("\r");
 	  fflush(stdout);
@@ -886,7 +886,7 @@ OutputLine(ppd_file_t         *ppd,	/* I - PPD file */
         {
 	  if (Feed)
 	  {
-	    printf("\033*b%dY", Feed);
+	    printf("\033*b%uY", Feed);
 	    Feed    = 0;
 	    LastSet = 0;
 	  }

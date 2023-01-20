@@ -137,8 +137,6 @@ cupsGetPPD3(http_t     *http,		/* I  - HTTP connection or @code CUPS_HTTP_DEFAUL
   int		port;			/* Port number */
   http_status_t	status;			/* HTTP status from server */
   char		tempfile[1024] = "";	/* Temporary filename */
-  _cups_globals_t *cg = _cupsGlobals();	/* Pointer to library globals */
-
 
  /*
   * Range check input...
@@ -187,6 +185,7 @@ cupsGetPPD3(http_t     *http,		/* I  - HTTP connection or @code CUPS_HTTP_DEFAUL
   {
     char	ppdname[1024];		/* PPD filename */
     struct stat	ppdinfo;		/* PPD file information */
+    _cups_globals_t* cg = _cupsGlobals();	/* Pointer to library globals */
 
 
     snprintf(ppdname, sizeof(ppdname), "%s/ppd/%s.ppd", cg->cups_serverroot,

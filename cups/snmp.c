@@ -29,7 +29,7 @@ static void		asn1_debug(const char *prefix, unsigned char *buffer,
 			           size_t len, int indent);
 static int		asn1_decode_snmp(unsigned char *buffer, size_t len,
 			                 cups_snmp_t *packet);
-static int		asn1_encode_snmp(unsigned char *buffer, size_t len,
+static ssize_t		asn1_encode_snmp(unsigned char *buffer, size_t len,
 			                 cups_snmp_t *packet);
 static int		asn1_get_integer(unsigned char **buffer,
 			                 unsigned char *bufend,
@@ -85,15 +85,13 @@ _cupsSNMPClose(int fd)			/* I - SNMP socket file descriptor */
 int *					/* O - New OID */
 _cupsSNMPCopyOID(int       *dst,	/* I - Destination OID */
                  const int *src,	/* I - Source OID */
-		 int       dstsize)	/* I - Number of integers in dst */
+                 size_t       dstsize)	/* I - Number of integers in dst */
 {
-  int	i;				/* Looping var */
+  size_t	i;				/* Looping var */
 
 
-  DEBUG_printf(("4_cupsSNMPCopyOID(dst=%p, src=%p, dstsize=%d)", dst, src,
-                dstsize));
-
-  for (i = 0, dstsize --; src[i] >= 0 && i < dstsize; i ++)
+  DEBUG_printf(("4_cupsSNMPCopyOID(dst=%p, src=%p, size=%u)", dst, src, (unsigned)dstsize));
+  for (i = 0; i < CUPS_SNMP_MAX_OID - 1 && src[i] >= 0; i ++)
     dst[i] = src[i];
 
   dst[i] = -1;
@@ -161,7 +159,7 @@ int					/* O - 1 if equal, 0 if not equal */
 _cupsSNMPIsOID(cups_snmp_t *packet,	/* I - Response packet */
                const int   *oid)	/* I - OID */
 {
-  int	i;				/* Looping var */
+  size_t	i;				/* Looping var */
 
 
  /*
@@ -210,7 +208,7 @@ _cupsSNMPIsOIDPrefixed(
     cups_snmp_t *packet,		/* I - Response packet */
     const int   *prefix)		/* I - OID prefix */
 {
-  int	i;				/* Looping var */
+  size_t	i;				/* Looping var */
 
 
  /*
@@ -645,7 +643,7 @@ _cupsSNMPWrite(
     const unsigned request_id,		/* I - Request ID */
     const int      *oid)		/* I - OID */
 {
-  int		i;			/* Looping var */
+  size_t		i;			/* Looping var */
   cups_snmp_t	packet;			/* SNMP message packet */
   unsigned char	buffer[CUPS_SNMP_MAX_PACKET];
 					/* SNMP message buffer */
@@ -683,7 +681,7 @@ _cupsSNMPWrite(
 
   strlcpy(packet.community, community, sizeof(packet.community));
 
-  for (i = 0; oid[i] >= 0 && i < (CUPS_SNMP_MAX_OID - 1); i ++)
+  for (i = 0; i < (CUPS_SNMP_MAX_OID - 1) && oid[i] >= 0; i ++)
     packet.object_name[i] = oid[i];
   packet.object_name[i] = -1;
 
@@ -755,7 +753,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
 
     size_t j;
 
-    fprintf(stderr, "%sHex Dump (%d bytes):\n", prefix, (int)len);
+    fprintf(stderr, "%sHex Dump (%u bytes):\n", prefix, (unsigned)len);
 
     for (i = 0; i < len; i += 16)
     {
@@ -810,40 +808,40 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
       case CUPS_ASN1_BOOLEAN :
           integer = asn1_get_integer(&buffer, bufend, value_length);
 
-          fprintf(stderr, "%s%*sBOOLEAN %d bytes %d\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sBOOLEAN %u bytes %d\n", prefix, indent, "",
 	          value_length, integer);
           break;
 
       case CUPS_ASN1_INTEGER :
           integer = asn1_get_integer(&buffer, bufend, value_length);
 
-          fprintf(stderr, "%s%*sINTEGER %d bytes %d\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sINTEGER %u bytes %d\n", prefix, indent, "",
 	          value_length, integer);
           break;
 
       case CUPS_ASN1_COUNTER :
           integer = asn1_get_integer(&buffer, bufend, value_length);
 
-          fprintf(stderr, "%s%*sCOUNTER %d bytes %u\n", prefix, indent, "",
-	          value_length, (unsigned)integer);
+          fprintf(stderr, "%s%*sCOUNTER %u bytes %d\n", prefix, indent, "",
+	          value_length, integer);
           break;
 
       case CUPS_ASN1_GAUGE :
           integer = asn1_get_integer(&buffer, bufend, value_length);
 
-          fprintf(stderr, "%s%*sGAUGE %d bytes %u\n", prefix, indent, "",
-	          value_length, (unsigned)integer);
+          fprintf(stderr, "%s%*sGAUGE %u bytes %d\n", prefix, indent, "",
+	          value_length, integer);
           break;
 
       case CUPS_ASN1_TIMETICKS :
           integer = asn1_get_integer(&buffer, bufend, value_length);
 
-          fprintf(stderr, "%s%*sTIMETICKS %d bytes %u\n", prefix, indent, "",
-	          value_length, (unsigned)integer);
+          fprintf(stderr, "%s%*sTIMETICKS %u bytes %d\n", prefix, indent, "",
+	          value_length, integer);
           break;
 
       case CUPS_ASN1_OCTET_STRING :
-          fprintf(stderr, "%s%*sOCTET STRING %d bytes \"%s\"\n", prefix,
+          fprintf(stderr, "%s%*sOCTET STRING %u bytes \"%s\"\n", prefix,
 	          indent, "", value_length,
 		  asn1_get_string(&buffer, bufend, value_length, string,
 				  sizeof(string)));
@@ -852,7 +850,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
       case CUPS_ASN1_HEX_STRING :
 	  asn1_get_string(&buffer, bufend, value_length, string,
 			  sizeof(string));
-          fprintf(stderr, "%s%*sHex-STRING %d bytes", prefix,
+          fprintf(stderr, "%s%*sHex-STRING %u bytes", prefix,
 	          indent, "", value_length);
           for (i = 0; i < value_length; i ++)
 	    fprintf(stderr, " %02X", string[i] & 255);
@@ -860,7 +858,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       case CUPS_ASN1_NULL_VALUE :
-          fprintf(stderr, "%s%*sNULL VALUE %d bytes\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sNULL VALUE %u bytes\n", prefix, indent, "",
 	          value_length);
 
 	  buffer += value_length;
@@ -870,7 +868,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           integer = asn1_get_oid(&buffer, bufend, value_length, oid,
 	                         CUPS_SNMP_MAX_OID);
 
-          fprintf(stderr, "%s%*sOID %d bytes ", prefix, indent, "",
+          fprintf(stderr, "%s%*sOID %u bytes ", prefix, indent, "",
 	          value_length);
 	  for (i = 0; i < (unsigned)integer; i ++)
 	    fprintf(stderr, ".%d", oid[i]);
@@ -878,7 +876,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       case CUPS_ASN1_SEQUENCE :
-          fprintf(stderr, "%s%*sSEQUENCE %d bytes\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sSEQUENCE %u bytes\n", prefix, indent, "",
 	          value_length);
           asn1_debug(prefix, buffer, value_length, indent + 4);
 
@@ -886,7 +884,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       case CUPS_ASN1_GET_NEXT_REQUEST :
-          fprintf(stderr, "%s%*sGet-Next-Request-PDU %d bytes\n", prefix,
+          fprintf(stderr, "%s%*sGet-Next-Request-PDU %u bytes\n", prefix,
 	          indent, "", value_length);
           asn1_debug(prefix, buffer, value_length, indent + 4);
 
@@ -894,7 +892,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       case CUPS_ASN1_GET_REQUEST :
-          fprintf(stderr, "%s%*sGet-Request-PDU %d bytes\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sGet-Request-PDU %u bytes\n", prefix, indent, "",
 	          value_length);
           asn1_debug(prefix, buffer, value_length, indent + 4);
 
@@ -902,7 +900,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       case CUPS_ASN1_GET_RESPONSE :
-          fprintf(stderr, "%s%*sGet-Response-PDU %d bytes\n", prefix, indent,
+          fprintf(stderr, "%s%*sGet-Response-PDU %u bytes\n", prefix, indent,
 	          "", value_length);
           asn1_debug(prefix, buffer, value_length, indent + 4);
 
@@ -910,7 +908,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
           break;
 
       default :
-          fprintf(stderr, "%s%*sUNKNOWN(%x) %d bytes\n", prefix, indent, "",
+          fprintf(stderr, "%s%*sUNKNOWN(%x) %u bytes\n", prefix, indent, "",
 	          value_type, value_length);
 
 	  buffer += value_length;
@@ -926,7 +924,7 @@ asn1_debug(const char    *prefix,	/* I - Prefix string */
 
 static int				/* O - 0 on success, -1 on error */
 asn1_decode_snmp(unsigned char *buffer,	/* I - Buffer */
-                 size_t        len,	/* I - Size of buffer */
+                 size_t        bufsize,	/* I - Size of buffer */
                  cups_snmp_t   *packet)	/* I - SNMP packet */
 {
   unsigned char	*bufptr,		/* Pointer into the data */
@@ -942,7 +940,7 @@ asn1_decode_snmp(unsigned char *buffer,	/* I - Buffer */
   packet->object_name[0] = -1;
 
   bufptr = buffer;
-  bufend = buffer + len;
+  bufend = buffer + bufsize;
 
   if (asn1_get_type(&bufptr, bufend) != CUPS_ASN1_SEQUENCE)
     snmp_set_error(packet, _("Packet does not start with SEQUENCE"));
@@ -1082,7 +1080,7 @@ asn1_decode_snmp(unsigned char *buffer,	/* I - Buffer */
  * 'asn1_encode_snmp()' - Encode a SNMP packet.
  */
 
-static int				/* O - Length on success, -1 on error */
+static ssize_t				/* O - Length on success, -1 on error */
 asn1_encode_snmp(unsigned char *buffer,	/* I - Buffer */
                  size_t        bufsize,	/* I - Size of buffer */
                  cups_snmp_t   *packet)	/* I - SNMP packet */
@@ -1217,7 +1215,7 @@ asn1_encode_snmp(unsigned char *buffer,	/* I - Buffer */
         break;
   }
 
-  return ((int)(bufptr - buffer));
+  return ((ssize_t)(bufptr - buffer));
 }
 
 
@@ -1248,7 +1246,7 @@ asn1_get_integer(
   }
 
   for (value = (**buffer & 0x80) ? ~0 : 0;
-       length > 0 && *buffer < bufend;
+       length && *buffer < bufend;
        length --, (*buffer) ++)
     value = ((value & 0xffffff) << 8) | **buffer;
 
@@ -1275,7 +1273,7 @@ asn1_get_length(unsigned char **buffer,	/* IO - Pointer in buffer */
 
   if (length & 128)
   {
-    int	count;				/* Number of bytes for length */
+    unsigned	count;				/* Number of bytes for length */
 
     if ((count = length & 127) > sizeof(unsigned))
     {
@@ -1288,7 +1286,7 @@ asn1_get_length(unsigned char **buffer,	/* IO - Pointer in buffer */
     }
 
     for (length = 0;
-	 count > 0 && *buffer < bufend;
+	 count && *buffer < bufend;
 	 count --, (*buffer) ++)
       length = (length << 8) | **buffer;
   }
@@ -1418,7 +1416,7 @@ asn1_get_string(
     * String is smaller than the buffer...
     */
 
-    if (length > 0)
+    if (length)
       memcpy(string, *buffer, length);
 
     string[length] = '\0';
