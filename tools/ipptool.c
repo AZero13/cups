@@ -3978,8 +3978,11 @@ print_line(
       if (i)
         cupsFilePutChar(data->outfile, ' ');
 
-      cupsFilePrintf(data->outfile, "%*s", (int)-widths[i], values[i] ? values[i] : "");
-      free(values[i]);
+      if (values[i])
+      {
+        cupsFilePrintf(data->outfile, "%*s", (int)-widths[i], values[i]);
+        free(values[i]);
+      }
     }
     cupsFilePutChar(data->outfile, '\n');
   }
