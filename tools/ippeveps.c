@@ -726,6 +726,73 @@ jpeg_to_ps(const char    *filename,	/* I - Filename */
   else
     page_scaling = y_factor;
 
+  /*
+   * Handle orientation and print-scaling modes
+   */
+  const char *orientation_str = getenv("IPP_ORIENTATION");
+  if (!orientation_str)
+    orientation_str = getenv("IPP_ORIENTATION_DEFAULT");
+  
+  const char *print_scaling_str = getenv("IPP_PRINT_SCALING");
+  if (!print_scaling_str)
+    print_scaling_str = getenv("IPP_PRINT_SCALING_DEFAULT");
+    
+  int orientation = IPP_ORIENT_PORTRAIT;
+  if (orientation_str)
+  {
+    if (!strcmp(orientation_str, "4") || !strcasecmp(orientation_str, "landscape"))
+      orientation = IPP_ORIENT_LANDSCAPE;
+    else if (!strcmp(orientation_str, "5") || !strcasecmp(orientation_str, "reverse-landscape"))
+      orientation = IPP_ORIENT_REVERSE_LANDSCAPE;
+    else if (!strcmp(orientation_str, "6") || !strcasecmp(orientation_str, "reverse-portrait"))
+      orientation = IPP_ORIENT_REVERSE_PORTRAIT;
+  }
+  
+  // Apply print-scaling modes
+  if (print_scaling_str)
+  {
+    if (!strcasecmp(print_scaling_str, "auto") || !strcasecmp(print_scaling_str, "auto-fit"))
+    {
+      // Current default behavior is auto-fit scaling - keep it the same
+      x_factor = page_width / width;
+      y_factor = page_height / height;
+      
+      if (x_factor > y_factor && (height * x_factor) <= page_height)
+        page_scaling = x_factor;
+      else
+        page_scaling = y_factor;
+    }
+    else if (!strcasecmp(print_scaling_str, "fill"))
+    {
+      // Scale to fill the page - may crop image
+      x_factor = page_width / width;
+      y_factor = page_height / height;
+      
+      if (x_factor < y_factor)
+        page_scaling = y_factor;
+      else
+        page_scaling = x_factor;
+    }
+    else if (!strcasecmp(print_scaling_str, "fit"))
+    {
+      // Scale to fit page without cropping
+      x_factor = page_width / width;
+      y_factor = page_height / height;
+      
+      if (x_factor < y_factor)
+        page_scaling = x_factor;
+      else
+        page_scaling = y_factor;
+    }
+    else if (!strcasecmp(print_scaling_str, "none"))
+    {
+      // No scaling
+      page_scaling = 1.0f;
+    }
+  }
+  
+  fprintf(stderr, "DEBUG: Orientation: %d, print-scaling: %s\n", orientation, 
+          print_scaling_str ? print_scaling_str : "auto");
   fprintf(stderr, "DEBUG: Scaled dimensions are %.2fx%.2f\n", width * page_scaling, height * page_scaling);
 
  /*
@@ -754,7 +821,53 @@ jpeg_to_ps(const char    *filename,	/* I - Filename */
       decode = "0 1 0 1 0 1 0 1";
     }
 
-    printf("gsave %.3f %.3f translate %.3f %.3f scale\n", page_left + 0.5f * (page_width - width * page_scaling), page_top - 0.5f * (page_height - height * page_scaling), page_scaling, page_scaling);
+    // Begin graphics state for the image
+    puts("gsave");
+    
+    // Handle orientation and translate to the center of the page
+    float x_center = page_left + 0.5f * page_width;
+    float y_center = page_top - 0.5f * page_height;
+    
+    // First move to the center of the page
+    printf("%.3f %.3f translate\n", x_center, y_center);
+    
+    // Apply rotation based on orientation
+    switch (orientation)
+    {
+      case IPP_ORIENT_LANDSCAPE: // 90 degrees counter-clockwise
+        printf("90 rotate\n");
+        break;
+      
+      case IPP_ORIENT_REVERSE_LANDSCAPE: // 270 degrees counter-clockwise (90 clockwise)
+        printf("-90 rotate\n");
+        break;
+      
+      case IPP_ORIENT_REVERSE_PORTRAIT: // 180 degrees
+        printf("180 rotate\n");
+        break;
+      
+      default: // portrait, no rotation
+        break;
+    }
+    
+    // Determine image dimensions after rotation
+    float img_width = width;
+    float img_height = height;
+    
+    if (orientation == IPP_ORIENT_LANDSCAPE || orientation == IPP_ORIENT_REVERSE_LANDSCAPE)
+    {
+      // Width and height are swapped in landscape orientations
+      img_width = height;
+      img_height = width;
+    }
+    
+    // Calculate the scaling and position
+    printf("%.3f %.3f translate %.3f %.3f scale\n", 
+           -0.5f * img_width * page_scaling, 
+           -0.5f * img_height * page_scaling,
+           page_scaling, page_scaling);
+    
+    // Output the image
     printf("<</ImageType 1/Width %d/Height %d/BitsPerComponent 8/ImageMatrix[1 0 0 -1 0 1]/Decode[%s]/DataSource currentfile/ASCII85Decode filter/DCTDecode filter/Interpolate true>>image\n", width, height, decode);
 
     if (fd > 0)
